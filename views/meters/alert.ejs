@@ -1,0 +1,241 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="alert-page mb-4">
+	<div class="row">
+		<div class="col-12">
+			<div class="AlertActionsBar mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-3">
+					<button class="btn btn-dark AlertCSV"><i class="fa-solid fa-download me-2"></i>Download CSV</button>
+					<button class="btn btn-success CallExpert"><i class="fa-solid fa-phone me-2"></i>Call Expert</button>
+				</div>
+				<input type="text" class="form-control AlertSearch" placeholder="Search by Meter names" />
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<!-- Left Side Sticky Summary Panel -->
+		<div class="col-md-4 AlertSticky">
+			<div class="AlertBox p-3 mb-3 border rounded">
+				<h6 class="AlertHeader">Total Alerts: <%= allAlerts?.length || 0 %></h6>
+
+				<% const grouped = {}; let acknowledged = 0; allAlerts?.forEach(alert => { const name = alert.name || 'Unknown Meter'; if
+				(alert.acknowledged) acknowledged++; grouped[name] = (grouped[name] || 0) + 1; }); const meterNames =
+				Object.keys(grouped).sort((a, b) => grouped[b] - grouped[a]); %> <% if (meterNames.length > 0) { %>
+				<ul class="list-unstyled alert-count-list">
+					<% meterNames.forEach(name => { %>
+					<li class="mb-1 alert-count">
+						<i class="fa-solid fa-bolt-lightning me-2 text-warning"></i>
+						<strong><%= name %></strong>: <%= grouped[name] %> alerts
+					</li>
+					<% }) %>
+				</ul>
+				<% } else { %>
+				<p class="text-muted">No alerts recorded yet.</p>
+				<% } %>
+			</div>
+
+			<div class="AlertBox p-3 mb-3 border rounded d-flex justify-content-between align-items-center">
+				<div>
+					<h6 class="AlertHeader mb-1">Acknowledged Alerts</h6>
+					<p class="mb-0 alert-count">Total: <%= acknowledged %></p>
+				</div>
+				<i class="fa-solid fa-check-circle text-success fs-4"></i>
+			</div>
+
+			<div class="AlertBox p-3 mb-3 border rounded text-center">
+				<h6 class="AlertHeader">Alerts by Meter</h6>
+				<canvas id="alertDoughnutChart" width="220" height="220" style="max-width: 100%; max-height: 240px"></canvas>
+				<div id="noChartDataMsg" style="display: none; color: #888; font-size: 0.95rem">No Data</div>
+			</div>
+		</div>
+
+		<!-- Right Side Alert Log -->
+		<div class="col-md-8 AlertScroll">
+			<div class="AlertLogScrollable">
+				<div id="noAlertsFound" class="NoAlertsFoundMsg" style="display: none">
+					<i class="bi bi-exclamation-circle" style="font-size: 2rem; color: #90caf9"></i>
+					<div>No alerts found for this meter!!</div>
+				</div>
+				<% const sortedAlerts = (allAlerts || []).slice().sort((a, b) => new Date(b.triggeredAt) - new Date(a.triggeredAt)); %> <%
+				sortedAlerts.forEach((alert, idx) => { %>
+				<div class="AlertCard p-4 mb-4 bg-white border rounded">
+					<h6 class="mb-2 card-title"><b>Alert <%= idx + 1 %></b></h6>
+					<div class="row g-2">
+						<div class="col-8">
+							<p class="mb-1">
+								<span class="AlertLabel">Meter name:</span> <span class="AlertValue"><%= alert.name || "N/A" %></span>
+							</p>
+							<p class="mb-1">
+								<span class="AlertLabel">Cause of alert:</span>
+								<span class="AlertValue"><%= alert.reason || "N/A" %></span>
+							</p>
+						</div>
+						<div class="col-4">
+							<p class="mb-1">
+								<span class="AlertLabel">Voltage:</span>
+								<span class="AlertValue"><%= alert.voltage != null ? alert.voltage : "N/A" %> V</span>
+							</p>
+							<p class="mb-1">
+								<span class="AlertLabel">Current:</span>
+								<span class="AlertValue"><%= alert.current != null ? alert.current : "N/A" %> A</span>
+							</p>
+							<p class="mb-1">
+								<span class="AlertLabel">Temperature:</span>
+								<span class="AlertValue"><%= alert.temperature != null ? alert.temperature : "N/A" %> °C</span>
+							</p>
+							<p class="mb-1">
+								<span class="AlertLabel">Load:</span>
+								<span class="AlertValue"><%= alert.load != null ? alert.load : "N/A" %> W</span>
+							</p>
+						</div>
+					</div>
+
+					<div class="form-check form-switch d-flex align-items-center mb-2">
+						<form
+							action="/alerts/<%= alert._id %>/acknowledge?_method=PUT"
+							method="POST"
+							class="d-flex align-items-center"
+							onsubmit="return false;"
+						>
+							<input class="form-check-input AlertAckSwitch" type="checkbox" id="acknowledgeSwitch<%= idx %>"
+							name="acknowledged" <%= alert.acknowledged ? 'checked disabled' : '' %> data-badge-id="badgeAck<%= idx %>"
+							onchange="if(this.checked) this.form.submit();" />
+							<label class="form-check-label ms-2 acknowledge-label" for="acknowledgeSwitch<%= idx %>">
+								Acknowledged?
+								<span
+									id="badgeAck<%= idx %>"
+									class="badge rounded-pill <%= alert.acknowledged ? 'bg-success' : 'bg-danger' %> ms-1"
+								>
+									<%= alert.acknowledged ? 'YES' : 'NO' %>
+								</span>
+							</label>
+						</form>
+					</div>
+
+					<div class="mt-2">
+						<label class="form-label comment-label">Admin comment for alert:</label>
+
+						<% if (!alert.comment || alert.comment.trim() === "") { %>
+						<form
+							action="/alerts/<%= alert._id %>/comment?_method=PUT"
+							method="POST"
+							class="d-flex gap-2 new-form needs-validation"
+							novalidate
+						>
+							<input
+								type="text"
+								name="comment"
+								class="form-control AlertComment"
+								placeholder="Write comment..."
+								minlength="1"
+								maxlength="100"
+								required
+							/>
+							<div class="valid-feedback">Looks good!</div>
+							<div class="invalid-feedback">Please enter a valid comment.</div>
+							<button type="submit" class="btn btn-dark submit-comment">Submit</button>
+						</form>
+						<% } else { %>
+						<div class="p-2 border rounded bg-light alert-comment">
+							<i class="fa-solid fa-comment-dots text-primary me-2"></i>
+							<%= alert.comment %>
+						</div>
+						<% } %>
+					</div>
+				</div>
+				<% }) %>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", () => {
+	const ctx = document.getElementById('alertDoughnutChart').getContext('2d');
+	const meterLabels = <%- JSON.stringify(Object.keys(grouped)) %>;
+	const meterData = <%- JSON.stringify(Object.values(grouped)) %>;
+
+	if (meterLabels.length > 0 && meterData.length > 0 && meterData.some(v => v > 0)) {
+	  new Chart(ctx, {
+	    type: 'doughnut',
+	    data: {
+	      labels: meterLabels,
+	      datasets: [{
+	        data: meterData,
+	        backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#f67019', '#f53794', '#28a745', '#6f42c1', '#ffc107'],
+	      }]
+	    },
+	    options: {
+	      responsive: true,
+	      plugins: {
+	        legend: {
+	          position: 'bottom',
+	        }
+	      }
+	    }
+	  });
+	} else {
+		document.getElementById('alertDoughnutChart').style.display = 'none';
+		document.getElementById('noChartDataMsg').style.display = 'block';
+	}
+	});
+    // CSV Download functionality
+	function downloadCSVFromAlerts(alerts) {
+		if (!alerts || !alerts.length) return;
+		const headers = ["Meter Name", "Comment", "Cause of Alert", "Voltage", "Current", "Temperature", "Load", "Acknowledged", "Triggered At"];
+		const rows = alerts.map(a => [
+			a.name || '',
+			(a.comment || ''), // Placeholder: if location is available on alert
+			a.reason || '',
+			a.voltage != null ? a.voltage : '',
+			a.current != null ? a.current : '',
+			a.temperature != null ? a.temperature : '',
+			a.load != null ? a.load : '',
+			a.acknowledged ? 'YES' : 'NO',
+			a.triggeredAt ? new Date(a.triggeredAt).toLocaleString() : ''
+		]);
+		let csvContent = '';
+		csvContent += headers.join(',') + '\n';
+		rows.forEach(r => { csvContent += r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',') + '\n'; });
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.setAttribute('download', 'alerts.csv');
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+
+	// Make sortedAlerts available in JS for CSV export
+	const sortedAlerts = <%- JSON.stringify(sortedAlerts) %>;
+</script>
+<script>
+	document.querySelector(".AlertCSV").addEventListener("click", function () {
+		downloadCSVFromAlerts(sortedAlerts);
+	});
+
+	// Call Expert button placeholder
+	document.querySelector(".CallExpert").addEventListener("click", function () {
+		alert("Calling an expert... (feature coming soon)");
+	});
+
+	// Search functionality for alerts
+	const searchInput = document.querySelector(".AlertSearch");
+	searchInput.addEventListener("input", function () {
+		const query = this.value.trim().toLowerCase();
+		const cards = document.querySelectorAll(".AlertLogScrollable .AlertCard");
+		cards.forEach((card) => {
+			const text = card.textContent.toLowerCase();
+			if (text.includes(query)) {
+				card.style.display = "";
+			} else {
+				card.style.display = "none";
+			}
+		});
+		const noAlertsMsg = document.getElementById("noAlertsFound");
+		const anyVisible = Array.from(cards).some((card) => card.style.display !== "none");
+		noAlertsMsg.style.display = anyVisible ? "none" : "";
+	});
+</script>

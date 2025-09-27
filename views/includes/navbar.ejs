@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="/meters">
+			<img src="/assets/logo1.png" alt="Logo" height="30" class="d-inline-block align-text-center"/>
+            GridPlus
+		</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse justify-content-between" id="navbarNavAltMarkup">
+			<div class="navbar-nav">
+				<a class="nav-link" href="/meters">All Meters</a>
+				<a class="nav-link" href="/meters/new">Add New Meter</a>
+                <% if (currentUser) { %>
+				<a class="nav-link nav-alert" href="/alerts"><i class="fa-solid fa-triangle-exclamation"></i>Alert Log</a>
+                <% } %>
+                <div class="navbar-search">
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2 search-bar" type="search" placeholder="Search Meter" aria-label="Search"/>
+                        <!-- <button class="btn btn-dark btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button> -->
+                    </form>
+                </div>
+			</div>
+            <div class="dropdown navbar-nav">
+				<button class="btn btn-white dropdown-toggle border-0 user-botton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+					<i class="fa-solid fa-user"></i>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <% if (!currentUser) { %>
+					<li><a class="dropdown-item user-dropdown-item" href="/signup"><i class="fa-solid fa-user-plus me-2"></i>Sign Up</a></li>
+					<li><a class="dropdown-item user-dropdown-item" href="/login"><i class="fa-solid fa-right-to-bracket me-2"></i>Login</a></li>
+                    <% } else { %>
+					<li><a class="dropdown-item user-dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+                    <% } %>
+				</ul>
+			</div>
+		</div>
+	</div>
+</nav>

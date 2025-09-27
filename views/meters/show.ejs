@@ -1,0 +1,386 @@
+<% layout("/layouts/boilerplate") %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+	<h5 class="show-page-info-top">
+		<b>Meter Dashboard: <%= meter.name %></b>
+	</h5>
+
+	<h5 class="show-page-info-top">
+		<b>
+			Health Status:
+			<span class="<%= meter.status.toLowerCase() === 'healthy' ? 'status-healthy' : 'status-alert' %>">
+				<%= meter.status %>
+			</span>
+		</b>
+	</h5>
+
+	<form id="paymentForm" action="/meters/<%= meter._id %>/request-payment" method="POST">
+		<button
+			id="paymentBtn"
+			type="submit"
+			class="btn btn-success"
+		>
+			<span style="margin-right: 4px">&#8377;</span>Request Payment
+		</button>
+	</form>
+</div>
+
+<div class="row g-4 mb-5">
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-4 bg-white" style="min-height: 600px">
+			<h6 class="mb-4"><b>Latest Meter Details</b></h6>
+			<ul class="list-group list-group-flush mb-4">
+				<li class="list-group-item list-group-item-info rounded show-list">
+					<b>Current:</b> <%= meter.current[meter.current.length - 1] %> A
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list">
+					<b>Voltage:</b> <%= meter.voltage[meter.voltage.length - 1] %> V
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list">
+					<b>Temperature:</b> <%= meter.temperature[meter.temperature.length - 1] %> °C
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list">
+					<b>Load:</b> <%= meter.load[meter.load.length - 1] %> W
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list">
+					<b>Power Factor:</b> <%= meter.powerFactor[meter.powerFactor.length - 1] %>
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list">
+					<b>Last Updated:</b> <%= meter.updatedAt[meter.updatedAt.length - 1].toString().split(" ").slice(1,5).join("/") %>
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list"><b>Location:</b> <%= meter.location %></li>
+                <li class="list-group-item list-group-item-info rounded show-list">
+					<b>Created On:</b> <%= meter.createdAt.toString().split(" ").slice(1,4).join("/") %>
+				</li>
+				<li class="list-group-item list-group-item-info rounded show-list"><b>Created by:</b> <%= meter.owner.username %></li>
+			</ul>
+
+			<h6 class="mb-4"><b>Recent Alerts</b></h6>
+			<% if (meter.alerts.length === 0) { %>
+			<p class="show-no-alert">No alerts triggered.</p>
+			<% } else { %>
+			<ul class="list-group list-group-flush">
+				<% meter.alerts.slice(-5).reverse().forEach(alert => { %>
+				<li class="list-group-item list-group-item-warning rounded show-list">
+					<span class="text-danger">⚠</span><b> <%= alert.reason %> </b><br />
+					<%= alert.triggeredAt.toString().split(" ").slice(1,5).join("/") %>
+				</li>
+				<% }) %>
+			</ul>
+			<% } %>
+		</div>
+	</div>
+
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded" style="min-height: 600px">
+			<canvas id="radarChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="currentChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="voltageChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="temperatureChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="loadChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="powerFactorChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="stepChart"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded" style="min-height: 600px">
+			<canvas id="polarAreaChart" style="height: 100%"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded" style="min-height: 600px">
+			<canvas id="doughnutChart" style="height: 100%"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="loadVsCurrentScatter"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded">
+			<canvas id="voltageVsPowerFactorScatter"></canvas>
+		</div>
+	</div>
+	<div class="col-lg-12">
+		<div class="chart-wrapper p-3 shadow-sm bg-white rounded" style="min-height: 600px">
+			<canvas id="multilinePerformanceChart" style="height: 100%"></canvas>
+		</div>
+	</div>
+    <% if(currentUser && currentUser._id.equals(meter.owner._id)) { %>
+	<div class="mt-5 mb-5 show-footer">
+		<form action="/meters/<%= meter._id %>/edit" method="GET">
+			<button class="btn btn-dark mb-3">Edit this Meter</button>
+		</form>
+		<form action="/meters/<%= meter._id %>/refresh?_method=PUT" method="POST">
+			<button class="btn btn-dark mb-3">Refresh Readings</button>
+		</form>
+		<form
+			action="/meters/<%= meter._id %>?_method=DELETE"
+			method="POST"
+			onsubmit="return confirm('Are you sure you want to delete this meter?');"
+		>
+			<button class="btn btn-danger mb-3">Delete this Meter</button>
+		</form>
+	</div>
+    <% } %>
+</div>
+
+<script>
+
+			const labels = <%- JSON.stringify(meter.updatedAt.map(date => new Date(date).toLocaleTimeString())) %>;
+
+			const currentData = <%- JSON.stringify(meter.current) %>;
+			const voltageData = <%- JSON.stringify(meter.voltage) %>;
+			const temperatureData = <%- JSON.stringify(meter.temperature) %>;
+			const loadData = <%- JSON.stringify(meter.load) %>;
+			const powerFactorData = <%- JSON.stringify(meter.powerFactor) %>;
+
+			function createLineChart(id, label, data, color) {
+				new Chart(document.getElementById(id), {
+					type: "line",
+					data: {
+						labels,
+						datasets: [{ label, data, borderColor: color, fill: true, backgroundColor: color + "33" }]
+					},
+					options: {
+						responsive: true,
+	                       maintainAspectRatio: false,
+						plugins: { title: { display: true, text: label + " Over Time" } }
+					},
+				});
+			}
+
+			createLineChart("currentChart", "Current (A)", currentData, "#4e73df");
+			createLineChart("voltageChart", "Voltage (V)", voltageData, "#e74a3b");
+			createLineChart("temperatureChart", "Temperature (°C)", temperatureData, "#f6c23e");
+			createLineChart("loadChart", "Load (W)", loadData, "#1cc88a");
+
+			// Power Factor Bar Chart
+			new Chart(document.getElementById("powerFactorChart"), {
+				type: "bar",
+				data: {
+					labels,
+					datasets: [{
+						label: "Power Factor",
+						data: powerFactorData,
+						backgroundColor: "#36b9cc"
+					}]
+				},
+				options: {
+					responsive: true,
+	                   maintainAspectRatio: false,
+					plugins: { title: { display: true, text: "Power Factor Over Time" } }
+				}
+			});
+
+			// Load vs Current Scatter Plot
+			new Chart(document.getElementById("loadVsCurrentScatter"), {
+				type: "scatter",
+				data: {
+					datasets: [{
+						label: "Load vs Current",
+						data: currentData.map((curr, i) => ({ x: curr, y: loadData[i] })),
+						backgroundColor: "#6610f2"
+					}]
+				},
+				options: {
+					responsive: true,
+	                   maintainAspectRatio: false,
+					plugins: { title: { display: true, text: "Load vs Current (Scatter Plot)" } },
+					scales: {
+						x: { title: { display: true, text: "Current (A)" } },
+						y: { title: { display: true, text: "Load (W)" } }
+					}
+				}
+			});
+
+			// Voltage vs Power Factor Scatter Plot
+			new Chart(document.getElementById("voltageVsPowerFactorScatter"), {
+				type: "scatter",
+				data: {
+					datasets: [{
+						label: "Voltage vs Power Factor",
+						data: voltageData.map((volt, i) => ({ x: volt, y: powerFactorData[i] })),
+						backgroundColor: "#fd7e14"
+					}]
+				},
+				options: {
+					responsive: true,
+	                   maintainAspectRatio: false,
+					plugins: { title: { display: true, text: "Voltage vs Power Factor (Scatter Plot)" } },
+					scales: {
+						x: { title: { display: true, text: "Voltage (V)" } },
+						y: { title: { display: true, text: "Power Factor" } }
+					}
+				}
+			});
+
+			// Multi-line Chart for Combined View
+			new Chart(document.getElementById("multilinePerformanceChart"), {
+				type: "line",
+				data: {
+					labels,
+					datasets: [
+						{ label: "Current (A)", data: currentData, borderColor: "#4e73df", fill: false },
+						{ label: "Voltage (V)", data: voltageData, borderColor: "#e74a3b", fill: false },
+						{ label: "Temperature (°C)", data: temperatureData, borderColor: "#f6c23e", fill: false },
+						{ label: "Power Factor", data: powerFactorData, borderColor: "#36b9cc", fill: false },
+					]
+				},
+				options: {
+					responsive: true,
+	                   maintainAspectRatio: false,
+					plugins: { title: { display: true, text: "Combined Performance Metrics" } }
+				}
+			});
+
+			// Doughnut Chart showing load distribution
+			new Chart(document.getElementById("doughnutChart"), {
+				type: "doughnut",
+				data: {
+					labels,
+					datasets: [{
+						label: "Load Share",
+						data: loadData,
+						backgroundColor: loadData.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`)
+					}]
+				},
+				options: {
+	                   responsive: true,
+	                   maintainAspectRatio: false,
+					plugins: { title: { display: true, text: "Load Distribution Over Time (Doughnut)" } }
+				}
+			});
+
+	        // Polar Area Chart for sensor averages
+		    new Chart(document.getElementById("polarAreaChart"), {
+				type: "polarArea",
+				data: {
+					labels: ["Current", "Voltage", "Temperature", "Load", "Power Factor"],
+					datasets: [{
+						label: "Sensor Averages",
+						data: [
+		  normalize(average(currentData), 0, 20),       // Assuming current range
+		  normalize(average(voltageData), 200, 280),    // Voltage range
+		  normalize(average(temperatureData), -20, 100),// Temperature range
+		  normalize(average(loadData), 0, 3500),        // Load range
+		  normalize(average(powerFactorData), 0, 1)     // Power factor range
+		],
+
+						backgroundColor: ["#4e73df", "#e74a3b", "#f6c23e", "#1cc88a", "#36b9cc"]
+					}]
+				},
+				options: {
+	                   responsive: true,
+	                   maintainAspectRatio: false,
+					plugins: { title: { display: true, text: "Sensor Averages (Polar Area)" } }
+				}
+			});
+
+	        // Step Chart for Load
+		    new Chart(document.getElementById("stepChart"), {
+				type: "line",
+				data: {
+					labels,
+					datasets: [{
+						label: "Load Step Chart",
+						data: loadData,
+						borderColor: "#20c997",
+						fill: false,
+						stepped: true
+					}]
+				},
+				options: {
+					plugins: { title: { display: true, text: "Load Over Time (Step Chart)" } },
+					responsive: true,
+	                   maintainAspectRatio: false,
+				}
+			});
+
+	        // Radar Chart for average sensor metrics
+	        const radarLabels = ["Current", "Voltage", "Temperature", "Load", "Power Factor"];
+
+		const radarDatasets = currentData.map((_, i) => ({
+			label: `Reading ${i + 1}`,
+			data: [
+				normalize(currentData[i], 0, 20),
+				normalize(voltageData[i], 200, 280),
+				normalize(temperatureData[i], -20, 100),
+				normalize(loadData[i], 0, 3500),
+				normalize(powerFactorData[i], 0, 1),
+			],
+			fill: true,
+			backgroundColor: `hsla(${(i * 60) % 360}, 70%, 60%, 0.2)`,
+			borderColor: `hsl(${(i * 60) % 360}, 70%, 50%)`,
+			pointBackgroundColor: `hsl(${(i * 60) % 360}, 70%, 40%)`,
+		}));
+
+		new Chart(document.getElementById("radarChart"), {
+			type: "radar",
+			data: {
+				labels: radarLabels,
+				datasets: radarDatasets,
+			},
+			options: {
+				responsive: true,
+	               maintainAspectRatio: false,
+				plugins: {
+					title: { display: true, text: "Sensor Readings Over Time (Radar Chart)" },
+					legend: { position: "top" }
+				},
+				scales: {
+					r: {
+						suggestedMin: 0,
+						suggestedMax: 100
+					}
+				}
+			}
+		});
+
+			function average(arr) {
+				return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+			}
+	        function normalize(value, min, max) {
+		return ((value - min) / (max - min)) * 100;
+	}
+	   window.addEventListener("resize", () => {
+		location.reload(); // Refreshes on window resize
+	});
+    document.addEventListener("DOMContentLoaded", function() {
+	  const paymentForm = document.getElementById("paymentForm");
+	  const paymentBtn = document.getElementById("paymentBtn");
+	  if(paymentForm && paymentBtn) {
+	    paymentForm.addEventListener("submit", function() {
+	      paymentBtn.disabled = true;
+	      paymentBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Requesting...';
+	    });
+	  }
+	});
+</script>

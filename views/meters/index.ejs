@@ -1,0 +1,93 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="mb-4">
+	<h3><b>Energy Overview</b></h3>
+	<div class="mb-3">
+		<label for="genBar" class="bar-heading"><b>Electricity Generation</b>: <span id="genVal">4500</span> kWh</label>
+		<div class="progress" style="height: 20px">
+			<div id="genBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 75%">75%</div>
+		</div>
+	</div>
+	<div>
+		<label for="consBar" class="bar-heading"><b>Electricity Consumption</b>: <span id="consVal">4100</span> kWh</label>
+		<div class="progress" style="height: 20px">
+			<div id="consBar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width: 68%">68%</div>
+		</div>
+	</div>
+</div>
+
+<h3><b>All Meters</b></h3>
+<div class="row row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1 g-4">
+	<% for(let meter of allMeters) { %>
+	<a href="/meters/<%= meter._id %>" class="listing-link">
+		<div class="card col">
+			<img
+				src="<%= meter.status.toLowerCase() === 'alert' ? '/assets/caution1.png' : '/assets/meter2.jpg' %>"
+				class="card-img-top"
+				alt="Property Image"
+				style="height: 12rem"
+			/>
+			<div class="card-body">
+				<p class="card-text">
+					<b class="meter-name"><%= meter.name %></b> <br />
+					Current: <%= meter.current[4] %> A <br />
+					Voltage: <%= meter.voltage[4] %> V <br />
+					<b
+						>Status:
+						<span class="<%= meter.status.toLowerCase() === 'healthy' ? 'status-healthy' : 'status-alert' %>">
+							<%= meter.status %>
+						</span>
+					</b>
+				</p>
+			</div>
+		</div>
+	</a>
+	<% } %>
+</div>
+<script>
+	document.addEventListener("DOMContentLoaded", () => {
+		function updateBars() {
+			const gen = Math.floor(Math.random() * (5000 - 4000) + 4000);
+			const cons = Math.floor(Math.random() * (gen - 200) + 3800);
+
+			const genPct = Math.floor((gen / 6000) * 100);
+			const consPct = Math.floor((cons / 6000) * 100);
+
+			if (consPct > 100) {
+				consBar.classList.remove("bg-warning");
+				consBar.classList.add("bg-danger");
+			} else {
+				consBar.classList.remove("bg-danger");
+				consBar.classList.add("bg-warning");
+			}
+
+			document.getElementById("genVal").innerText = gen;
+			document.getElementById("genBar").style.width = genPct + "%";
+			document.getElementById("genBar").innerText = genPct + "%";
+
+			document.getElementById("consVal").innerText = cons;
+			document.getElementById("consBar").style.width = consPct + "%";
+			document.getElementById("consBar").innerText = consPct + "%";
+		}
+		updateBars();
+		setInterval(updateBars, 10000);
+
+		const searchInput = document.querySelector(".search-bar");
+		const meterCards = document.querySelectorAll(".card");
+
+		searchInput.addEventListener("input", () => {
+			const query = searchInput.value.toLowerCase();
+
+			meterCards.forEach((card) => {
+				const nameElement = card.querySelector(".meter-name");
+				const name = nameElement.textContent.toLowerCase();
+
+				if (name.includes(query)) {
+					card.parentElement.style.display = ""; // parent of .card is <a>
+				} else {
+					card.parentElement.style.display = "none";
+				}
+			});
+		});
+	});
+</script>
