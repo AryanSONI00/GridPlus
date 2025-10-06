@@ -2,6 +2,9 @@
 
 [![Node Version](https://img.shields.io/badge/node-20.16.0-339933?logo=node.js)](https://nodejs.org/en) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Express](https://img.shields.io/badge/web-Express-000000?logo=express)](https://expressjs.com/) [![MongoDB Atlas](https://img.shields.io/badge/db-MongoDB%20Atlas-47A248?logo=mongodb)](https://www.mongodb.com/atlas)
 
+<a href="https://d17yvdk2uely6c.cloudfront.net/meters" target="_blank"><img src="https://img.shields.io/badge/CloudFront-Live%20Demo-1f6feb?logo=amazon-aws&logoColor=white" alt="CloudFront Live Demo"></a>
+<a href="http://54.166.141.1:3000" target="_blank"><img src="https://img.shields.io/badge/EC2-Direct%20Link-ff9900?logo=amazon-ec2&logoColor=white" alt="EC2 Direct Link"></a>
+
 > IBM Internship Project · Lead Developer: Aryan Soni
 >
 > Deployed on AWS EC2 (Ubuntu) with CloudFront CDN. Future AWS integrations planned.
