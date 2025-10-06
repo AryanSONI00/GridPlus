@@ -1,9 +1,10 @@
-# GridPlus
+# GridPlus – Smart Grid Monitoring & Alerting Platform
 
-[Live Demo](https://d17yvdk2uely6c.cloudfront.net/meters)
+[![Node Version](https://img.shields.io/badge/node-20.16.0-339933?logo=node.js)](https://nodejs.org/en) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Express](https://img.shields.io/badge/web-Express-000000?logo=express)](https://expressjs.com/) [![MongoDB Atlas](https://img.shields.io/badge/db-MongoDB%20Atlas-47A248?logo=mongodb)](https://www.mongodb.com/atlas)
 
-> **IBM Internship Project** > _Lead Developer: Aryan Soni_
-> Deployed on **AWS EC2 t3.micro & Cloudfront** | Future AWS integrations planned
+> IBM Internship Project · Lead Developer: Aryan Soni
+>
+> Deployed on AWS EC2 (Ubuntu) with CloudFront CDN. Future AWS integrations planned.
 
 ---
 
@@ -11,92 +12,113 @@
 
 -   [Overview](#overview)
 -   [Live Demo](#live-demo)
+-   [Architecture](#architecture)
+-   [Key Features](#key-features)
 -   [Tech Stack](#tech-stack)
--   [Features](#features)
--   [How Authentication Works](#how-authentication-works)
--   [Getting Started](#getting-started)
--   [Project Structure & MVC](#project-structure--mvc)
 -   [Data Model](#data-model)
+-   [Authentication & Authorization](#authentication--authorization)
+-   [Operations & SRE](#operations--sre)
+-   [Getting Started](#getting-started)
+-   [Environment Variables](#environment-variables)
+-   [Project Structure](#project-structure)
+-   [API Surface](#api-surface)
 -   [Deployment](#deployment)
--   [Future Plans](#future-plans)
+-   [Roadmap](#roadmap)
 -   [License](#license)
--   [Team & Credits](#team--credits)
--   [Contact](#contact)
+-   [Team & Contact](#team--contact)
 
 ---
 
 ## Overview
 
-**GridPlus** is a full-stack web application for real-time monitoring, alerting, and management of electrical meters in industrial and commercial environments. It provides a responsive dashboard, robust authentication, alerting, analytics, and a clean, modern UI.
+GridPlus is a full‑stack application for real‑time monitoring, alerting, and lifecycle management of electrical meters in industrial and commercial environments. It includes a responsive dashboard, robust auth, alerting (including fire/emergency), scheduled jobs, analytics, and email notifications.
 
 ---
 
 ## Live Demo
 
-🌐 [http://54.166.141.1:3000](http://54.166.141.1:3000)
+-   CloudFront: `https://d17yvdk2uely6c.cloudfront.net/meters`
+-   EC2 (direct): `http://54.166.141.1:3000`
+
+> Demo accounts can be created via Signup; emails are sent to configured addresses in `.env` and sample targets in `utils/email.js`.
+
+---
+
+## Architecture
+
+High-level components:
+
+-   Web server (`Express`) renders views via `EJS` with `ejs-mate` layouts
+-   MongoDB Atlas with `Mongoose` models (`Meter`, `Alert`, `User`)
+-   Session-backed auth via `passport-local` and `connect-mongo`
+-   Background jobs via `node-cron` for:
+    -   Synthetic meter readings (`utils/simulateReadingJob.js`) every 20 minutes
+    -   Payment request notifications every 30 minutes
+-   Email notifications via `Nodemailer` (Gmail/SMTP)
+-   MVC organization with modular routers and controllers
+
+Request flow (simplified): browser → `Express` routes → controllers → services/utils → MongoDB → EJS views → response
+
+---
+
+## Key Features
+
+-   Responsive dashboard (EJS, Bootstrap, custom CSS)
+-   CRUD for meters; owner-only edits/deletes with guard middleware
+-   Alerting on threshold violations; log, acknowledge, and comment
+-   Fire prediction logic with emergency email notification
+-   Analytics with charts and progress indicators
+-   Session-based authentication with 7‑day persistence
+-   Flash messages and centralized error handling
+-   Input validation with `Joi` on both server and client paths
+-   CSV-ready alert logs and quick meter search
+-   Payment request emails (demo)
 
 ---
 
 ## Tech Stack
 
--   **Languages:** JavaScript (Node.js, Express), HTML, CSS, EJS
--   **Frontend:** EJS templates, Bootstrap 5, custom CSS, vanilla JS
--   **Backend:** Node.js, Express.js, MVC architecture, Express Router
--   **Database:** MongoDB Atlas (cloud), Mongoose ODM
--   **Authentication:** Passport.js (local strategy), express-session, connect-mongo
--   **Validation:** Joi (client & server-side)
--   **Email:** Nodemailer (Gmail/SMTP)
--   **Other:** Chart.js (analytics), method-override, dotenv, connect-flash, node-cron
--   **DevOps:** Deployed on AWS EC2 t3.micro (Ubuntu) & Cloudfront, future AWS tools planned
+-   Languages: JavaScript (Node.js), HTML, CSS
+-   Backend: Node.js, Express.js, MVC, Express Router
+-   Views/UI: EJS + `ejs-mate`, Bootstrap 5, vanilla JS
+-   Database: MongoDB Atlas, `mongoose`
+-   AuthN/Z: `passport`, `passport-local`, `express-session`, `connect-mongo`
+-   Validation: `joi`
+-   Email: `nodemailer`
+-   Jobs/Scheduling: `node-cron`
+-   Utilities: `method-override`, `dotenv`, `connect-flash`
+-   Runtime: Node v20.16.0
 
 ---
 
-## Features
+## Data Model
 
--   **Responsive, Clean UI:** Modern, mobile-friendly interface with EJS, Bootstrap, and custom CSS.
--   **Authentication & Authorization:**
-    -   Session-based login with express-session and connect-mongo.
-    -   Passport.js local strategy for secure auth.
-    -   Cookie expiry (7 days), persistent login (no need to re-login).
-    -   Route protection: only logged-in users can manage meters; only owners can edit/delete their meters.
-    -   Redirect-after-login: If a user tries to access a protected route, they're redirected to login and then back to their intended action.
--   **Meter Management:**
-    -   Register, edit, delete, and monitor multiple meters.
-    -   Only the owner can edit/delete their meters.
-    -   Quick search for meters.
--   **Alert System:**
-    -   Automatic detection of abnormal readings (current, voltage, power factor, temperature, load).
-    -   Fire prediction logic.
-    -   Alert logging, acknowledgment, admin comments.
-    -   Download alert logs as CSV.
--   **Dashboard & Analytics:**
-    -   Visualize meter data with interactive charts (line, bar, radar, scatter, doughnut, polar area).
-    -   Animated progress bars for energy overview.
--   **Email Notifications:** Alert, fire, and payment request emails.
--   **Robust Error Handling:**
-    -   Custom ExpressError class.
-    -   Centralized error middleware.
-    -   wrapAsync utility for async route error handling.
--   **Validation:**
-    -   Joi for both client and server-side validation.
-    -   Handles edge cases and invalid input gracefully.
--   **API & Code Quality:**
-    -   Clean, RESTful APIs.
-    -   Express Router for modular routes.
-    -   Clean, well-structured MongoDB schema.
-    -   Middlewares for flash messages, error handling, and more.
--   **Sample Data Initialization:** Seed database for demo/testing.
--   **Security:** HTTP-only cookies, environment variables for secrets, input validation.
+-   Meter: `name`, `location`, arrays of `current`, `voltage`, `powerFactor`, `temperature`, `load`; `status`, `alertCount`, `alerts[]`, `updatedAt[]`, `fire`, `owner`
+-   Alert: `name`, reading snapshot fields, `reason`, `acknowledged`, `comment`, timestamps
+-   User: `username`, `email`, `passwordHash` (via `passport-local-mongoose`)
 
 ---
 
-## How Authentication Works
+## Authentication & Authorization
 
--   **Session-Based Auth:** Uses express-session and connect-mongo to store sessions in MongoDB Atlas.
--   **Persistent Login:** Users stay logged in for 7 days (cookie expiry), unless they log out.
--   **Redirect After Login:** If a user tries to access a protected route, they're redirected to login, and after successful login, they're automatically redirected to their original destination.
--   **Route Protection:** Only authenticated users can access/modify their own meters and alerts.
--   **Password Security:** Passwords are hashed and never stored in plain text.
+-   Session-based auth persisted in MongoDB using `connect-mongo`
+-   Local strategy via `passport-local`; passwords hashed and salted
+-   Route protection middleware for login checks and owner checks
+-   Redirect-after-login support to return users to intended routes
+-   HTTP-only cookies, 7‑day session TTL, secrets stored in environment variables
+
+---
+
+## Operations & SRE
+
+-   Health endpoint: `GET /health` → `OK`
+-   Background jobs (`node-cron`):
+    -   Every 20 minutes: simulate meter readings (`utils/simulateReadingJob.js`)
+    -   Every 30 minutes: send payment request emails for all meters
+-   Hardening:
+    -   Centralized error middleware using `utils/ExpressError`
+    -   Unhandled promise rejection listener
+    -   Increased `keepAliveTimeout`/`headersTimeout` for managed hosting (e.g., Render/AWS ALB)
 
 ---
 
@@ -105,86 +127,139 @@
 ### Prerequisites
 
 -   Node.js v20.16.0
--   MongoDB Atlas (or local MongoDB)
+-   MongoDB Atlas cluster (or a local MongoDB)
 
 ### Installation
 
-1. **Clone the repository:**
+1. Clone and enter the repository:
     ```bash
     git clone <repo-url>
     cd GridPlus
     ```
-2. **Install dependencies:**
+2. Install dependencies:
     ```bash
     npm install
     ```
-3. **Set up environment variables:**
-    - Create a `.env` file in the root directory:
-        ```
-        ATLAS_DB=your_mongodb_atlas_url
-        SESSION_SECRET=your_session_secret
-        EMAIL_USER=your_email@gmail.com
-        EMAIL_PASS=your_email_password
-        NODE_ENV=production
-        PORT=3000
-        ```
-4. **(Optional) Initialize sample data:**
-    - Run the script in `init/index.js` to seed the database.
-5. **Start the application:**
+3. Configure environment variables: see [Environment Variables](#environment-variables)
+4. (Optional) Seed sample data: run the script in `init/index.js` if provided
+5. Start the server:
     ```bash
-    npm start
+    node app.js
     ```
-6. **Visit the app:**
-    - Open [http://localhost:3000](http://localhost:3000) in your browser.
+6. Open the app:
+    - Local: `http://localhost:3000`
+
+> Note: A `start` npm script is not defined. You can run `node app.js` directly, or add a script: `"start": "node app.js"`.
 
 ---
 
-## Project Structure & MVC
+## Environment Variables
 
--   **MVC Architecture:** Clear separation of concerns with Models, Views (EJS), and Controllers.
--   **Express Router:** Modular route handling for users, meters, and alerts.
--   **Directory Structure:**
-    ```
-    GridPlus/
-      app.js
-      controllers/
-      models/
-      routes/
-      views/
-      public/
-      utils/
-      ...
-    ```
+Create a `.env` file in the project root with the following keys:
+
+```ini
+ATLAS_DB=<your_mongodb_atlas_connection_string>
+SESSION_SECRET=<a_strong_random_string>
+EMAIL_USER=<smtp_username_or_gmail_address>
+EMAIL_PASS=<smtp_app_password_or_secret>
+NODE_ENV=production
+PORT=3000
+```
+
+Used by:
+
+-   `app.js`: `ATLAS_DB`, `SESSION_SECRET`, `NODE_ENV`, `PORT`
+-   `utils/email.js`: `EMAIL_USER`, `EMAIL_PASS`
 
 ---
 
-## Data Model
+## Project Structure
 
--   **Meter:** name, location, readings, status, alerts, fire, owner, timestamps
--   **Alert:** meter name, readings, reason, acknowledged, comment, triggeredAt
--   **User:** username, email, hashed password
+```
+GridPlus/
+  app.js
+  controllers/
+  models/
+  routes/
+  views/
+  public/
+  utils/
+  init/
+  middleware.js
+  schema.js
+  README.md
+  package.json
+```
+
+-   Controllers: request orchestration and business logic
+-   Models: Mongoose schemas (`meter`, `alert`, `user`)
+-   Routes: modular `Express.Router` endpoints for `users`, `meters`, `alerts`
+-   Views: EJS templates with `ejs-mate` layouts
+-   Utils: email, async wrapper, simulation job, error helpers
+
+---
+
+## API Surface
+
+User
+
+-   `GET /signup` – render signup
+-   `POST /signup` – create account
+-   `GET /login` – render login
+-   `POST /login` – authenticate (Passport local)
+-   `GET /logout` – end session
+
+Meters
+
+-   `GET /meters` – list all meters
+-   `GET /meters/new` – new meter form (auth)
+-   `POST /meters` – create meter (auth)
+-   `GET /meters/:id` – show meter
+-   `GET /meters/:id/edit` – edit form (auth + owner)
+-   `PUT /meters/:id` – update (auth + owner)
+-   `DELETE /meters/:id` – delete (auth + owner)
+-   `POST /meters/:id/request-payment` – send payment email (auth + owner)
+
+Alerts
+
+-   `GET /alerts` – alert log (auth)
+-   `PUT /alerts/:id/comment` – add/update comment (auth)
+-   `PUT /alerts/:id/acknowledge` – set acknowledgement (auth)
+
+Utilities
+
+-   `GET /health` – health check
+
+> Many endpoints render server-side views. JSON APIs can be added alongside as needed.
 
 ---
 
 ## Deployment
 
--   **Current:** AWS EC2 t3.micro (Ubuntu), Node.js, MongoDB Atlas
--   **Planned:** Integration with other AWS services (S3 for assets, CloudWatch for monitoring, SES for email, etc.)
+-   Current: AWS EC2 (Ubuntu) + CloudFront CDN, MongoDB Atlas
+-   Suggested production configuration:
+    -   Configure `.env` with production values
+    -   Ensure `NODE_ENV=production`
+    -   Use a process manager (PM2/systemd) and reverse proxy (Nginx/ALB)
+    -   Set `SESSION_SECRET` and rotate regularly
+    -   Configure SMTP credentials for `nodemailer`
+    -   Monitor health (`/health`) and logs
+
+Future integrations (planned):
+
+-   AWS S3 (assets), CloudWatch (metrics/logs), SES (email), Lambda (serverless jobs)
 
 ---
 
-## Future Plans
+## Roadmap
 
--   Integrate more AWS tools (S3 for asset storage, CloudWatch for monitoring, SES for email, Lambda for serverless jobs, etc.)
--   Advanced analytics and reporting (custom dashboards, exportable reports)
--   Real-time data streaming and updates (WebSockets)
--   Role-based access control (admin, user, etc.)
--   Mobile app version
--   More granular alerting and notification options
--   Multi-tenancy and organization support
--   Enhanced search and filtering for meters and alerts
--   Integration with IoT devices for live meter data
--   Improved payment and billing features
+-   Role-based access control (admin/user)
+-   Real-time updates via WebSockets
+-   Advanced analytics & reporting
+-   Mobile application
+-   Multi-tenancy and org-level separation
+-   IoT device integration for live meter data
+-   Enhanced billing and payments
 
 ---
 
@@ -194,16 +269,10 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ---
 
-## Team & Credits
+## Team & Contact
 
--   **Lead Developer:** Aryan Soni (IBM Internship Project)
--   Special thanks to the GridPlus team and contributors.
-
----
-
-## Contact
-
--   [GitHub](https://github.com/AryanSONI00)
--   [Twitter](https://x.com/Aryansoni_77/)
--   [Instagram](https://www.instagram.com/itz_aryannn0/)
--   [LinkedIn](www.linkedin.com/in/aryan-soni-604696252/)
+-   Lead Developer: Aryan Soni (IBM Internship Project)
+-   GitHub: `https://github.com/AryanSONI00`
+-   X (Twitter): `https://x.com/Aryansoni_77/`
+-   Instagram: `https://www.instagram.com/itz_aryannn0/`
+-   LinkedIn: `https://www.linkedin.com/in/aryan-soni-604696252/`
