@@ -133,7 +133,7 @@ Request flow (simplified): browser → `Express` routes → controllers → serv
 
 1. Clone and enter the repository:
     ```bash
-    git clone <repo-url>
+    git clone https://github.com/AryanSONI00/GridPlus.git
     cd GridPlus
     ```
 2. Install dependencies:
