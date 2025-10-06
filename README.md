@@ -2,7 +2,7 @@
 
 [Live Demo](https://d17yvdk2uely6c.cloudfront.net/meters)
 
-> **IBM Internship Project** > _Lead Developer: Raghav Agarwal_
+> **IBM Internship Project** > _Lead Developer: Aryan Soni_
 > Deployed on **AWS EC2 t3.micro & Cloudfront** | Future AWS integrations planned
 
 ---
