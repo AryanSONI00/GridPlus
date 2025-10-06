@@ -37,8 +37,8 @@ GridPlus is a full‑stack application for real‑time monitoring, alerting, and
 
 ## Live Demo
 
--   CloudFront: `https://d17yvdk2uely6c.cloudfront.net/meters`
--   EC2 (direct): `http://54.166.141.1:3000`
+<a href="https://d17yvdk2uely6c.cloudfront.net/meters" target="_blank"><img src="https://img.shields.io/badge/CloudFront-Live%20Demo-1f6feb?logo=amazon-aws&logoColor=white" alt="CloudFront Live Demo"></a>
+<a href="http://54.166.141.1:3000" target="_blank"><img src="https://img.shields.io/badge/EC2-Direct%20Link-ff9900?logo=amazon-ec2&logoColor=white" alt="EC2 Direct Link"></a>
 
 > Demo accounts can be created via Signup; emails are sent to configured addresses in `.env` and sample targets in `utils/email.js`.
 
@@ -272,7 +272,8 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ## Team & Contact
 
 -   Lead Developer: Aryan Soni (IBM Internship Project)
--   GitHub: `https://github.com/AryanSONI00`
--   X (Twitter): `https://x.com/Aryansoni_77/`
--   Instagram: `https://www.instagram.com/itz_aryannn0/`
--   LinkedIn: `https://www.linkedin.com/in/aryan-soni-604696252/`
+
+<a href="https://github.com/AryanSONI00" target="_blank"><img src="https://img.shields.io/badge/GitHub-AryanSONI00-181717?logo=github" alt="GitHub"></a>
+<a href="https://x.com/Aryansoni_77/" target="_blank"><img src="https://img.shields.io/badge/X-@Aryansoni__77-000000?logo=x" alt="X"></a>
+<a href="https://www.instagram.com/itz_aryannn0/" target="_blank"><img src="https://img.shields.io/badge/Instagram-itz__aryannn0-E4405F?logo=instagram&logoColor=white" alt="Instagram"></a>
+<a href="https://www.linkedin.com/in/aryan-soni-604696252/" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-Aryan%20Soni-0A66C2?logo=linkedin&logoColor=white" alt="LinkedIn"></a>
