@@ -196,14 +196,14 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Team & Credits
 
--   **Lead Developer:** Raghav Agarwal (IBM Internship Project)
+-   **Lead Developer:** Aryan Soni (IBM Internship Project)
 -   Special thanks to the GridPlus team and contributors.
 
 ---
 
 ## Contact
 
--   [GitHub](https://github.com/git-raghav)
--   [Twitter](https://x.com/raghavsayshii/)
--   [Instagram](https://www.instagram.com/raghavsayshii/)
--   [LinkedIn](https://www.linkedin.com/in/raghav-agarwal-5a7702293/)
+-   [GitHub](https://github.com/AryanSONI00)
+-   [Twitter](https://x.com/Aryansoni_77/)
+-   [Instagram](https://www.instagram.com/itz_aryannn0/)
+-   [LinkedIn](www.linkedin.com/in/aryan-soni-604696252/)
