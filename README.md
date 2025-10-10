@@ -5,7 +5,7 @@
 <a href="https://d17yvdk2uely6c.cloudfront.net/meters" target="_blank"><img src="https://img.shields.io/badge/CloudFront-Live%20Demo-1f6feb?logo=amazon-aws&logoColor=white" alt="CloudFront Live Demo"></a>
 <a href="http://54.166.141.1:3000" target="_blank"><img src="https://img.shields.io/badge/EC2-Direct%20Link-ff9900?logo=amazon-ec2&logoColor=white" alt="EC2 Direct Link"></a>
 
-> IBM Internship Project · Lead Developer: Aryan Soni
+> IBM Internship Project · Lead Developer: Aryan Soni.
 >
 > Deployed on AWS EC2 (Ubuntu) with CloudFront CDN. Future AWS integrations planned.
 
